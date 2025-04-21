@@ -140,8 +140,6 @@ func MegaETH() {
 		fmt.Println("Follow X : 0xNekowawolf\n")
 		fmt.Printf("Total successfully deployed: %d/%d\n", successCount, successCount)
 	}
-
-	fmt.Printf("\nTotal successfully deployed: %d/%d\n", successCount, numContracts)
 }
 
 func deployContractMegaETH(privateKey string, walletIndex int, contractABI abi.ABI) DeployResultMegaETH {
