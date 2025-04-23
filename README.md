@@ -18,6 +18,7 @@ Contract deployer bot is an automated tool that simplifies the process of deploy
 
 - Monad
 - MegaETH
+- Rise
 - More soon
 
 ## 📌 Setup
