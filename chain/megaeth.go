@@ -195,16 +195,20 @@ func deployContractMegaETH(privateKey string, walletIndex int, contractABI abi.A
 
 	fee := new(big.Float).Quo(
 		new(big.Float).SetInt(new(big.Int).Mul(big.NewInt(int64(receipt.GasUsed)), gasPrice)),
-		new(big.Float).SetInt(big.NewInt(1e6)),
+		new(big.Float).SetInt(big.NewInt(1e18)), 
 	)
-	feeStr, _ := fee.Float64()
-
+	
+	feeStr := strings.TrimRight(strings.TrimRight(fee.Text('f', 18), "0"), "")
+	if strings.HasSuffix(feeStr, ".") {
+		feeStr = strings.TrimSuffix(feeStr, ".")
+	}
+	
 	return DeployResultMegaETH{
 		Success:      true,
 		WalletIndex:  walletIndex,
 		ContractAddr: address.Hex(),
 		TxHash:       tx.Hash().Hex(),
-		Fee:          fmt.Sprintf("%.6f MegaETH", feeStr),
+		Fee:          feeStr + " ETH",
 	}
 }
 
