@@ -11,12 +11,12 @@ import (
 )
 
 func main() {
-	fmt.Println("Select chain:")
+	fmt.Println("\nSelect chain:")
 	fmt.Println("1. Monad")
 	fmt.Println("2. MegaETH")
 	fmt.Println("3. Rise")
 	fmt.Println("4. 0g")
-	fmt.Print("Enter your choice: ")
+	fmt.Print("Enter your choice:")
 
 	reader := bufio.NewReader(os.Stdin)
 	choice, _ := reader.ReadString('\n')
