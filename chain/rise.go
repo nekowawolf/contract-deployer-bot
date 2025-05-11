@@ -11,20 +11,32 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
 const (
-	RPC_URL_RISE       = "https://testnet.riselabs.xyz"
-	CHAIN_ID_RISE     = 11155931
-	GAS_LIMIT_RISE    = 150000
-	EXPLORER_BASE_RISE = "https://explorer.testnet.riselabs.xyz/address/"
-	DELAY_SECONDS_RISE = 2
+	RPC_URL_RISE                  = "https://testnet.riselabs.xyz"
+	CHAIN_ID_RISE                 = 11155931
+	EXPLORER_BASE_RISE            = "https://explorer.testnet.riselabs.xyz/tx/"
+	DELAY_SECONDS_RISE            = 2
+	GAS_PRICE_BUFFER_PERCENT_RISE = 0
+	GAS_LIMIT_BUFFER_PERCENT_RISE = 10
+)
+
+var (
+	green2   = color.New(color.FgGreen).SprintFunc()
+	red2     = color.New(color.FgRed).SprintFunc()
+	yellow2  = color.New(color.FgYellow).SprintFunc()
+	cyan2    = color.New(color.FgCyan).SprintFunc()
+	magenta2 = color.New(color.FgMagenta).SprintFunc()
+	blue2    = color.New(color.FgBlue).SprintFunc()
 )
 
 type DeployResultRise struct {
@@ -39,8 +51,8 @@ type DeployResultRise struct {
 func Rise() {
 	godotenv.Load()
 
-	wallets := make([]string, 10)
-	for i := 0; i < 10; i++ {
+	wallets := make([]string, 20)
+	for i := 0; i < 20; i++ {
 		wallets[i] = os.Getenv(fmt.Sprintf("PRIVATE_KEYS_WALLET%d", i+1))
 	}
 
@@ -48,36 +60,22 @@ func Rise() {
 	for i, key := range wallets {
 		if key != "" {
 			activeWallets = append(activeWallets, key)
-			log.Printf("Loaded Wallet #%d", i+1)
+			log.Printf("%s #%d", cyan2("Loaded Wallet"), i+1)
 		}
 	}
 
 	if len(activeWallets) == 0 {
-		log.Fatal("No valid private keys found in environment variables")
+		log.Fatal(red2("No valid private keys found in environment variables"))
 	}
 
 	numContracts, _ := strconv.Atoi(os.Getenv("NUM_CONTRACTS"))
 	if numContracts < 1 {
-		log.Fatal("NUM_CONTRACTS must be at least 1")
+		log.Fatal(red2("NUM_CONTRACTS must be at least 1"))
 	}
-
-	client, err := ethclient.Dial(RPC_URL_RISE)
-	if err != nil {
-		log.Fatalf("Failed to connect to Rise RPC: %v", err)
-	}
-	defer client.Close()
-
-	suggestedGasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to get suggested gas price: %v", err)
-	}
-
-	gasPrice := new(big.Int).Mul(suggestedGasPrice, big.NewInt(11))
-	gasPrice.Div(gasPrice, big.NewInt(10))
 
 	contractABI, err := getBasicContractABIRise()
 	if err != nil {
-		log.Fatalf("ABI error: %v", err)
+		log.Fatalf("%s: %v", red2("ABI error"), err)
 	}
 
 	results := make(chan DeployResultRise, numContracts)
@@ -113,32 +111,34 @@ func Rise() {
 	for res := range results {
 		if res.Success {
 			successCount++
-			fmt.Printf("[Wallet #%d]\n", res.WalletIndex)
-			fmt.Printf("Contract: %s\n", shortenAddressRise(res.ContractAddr))
-			fmt.Printf("TxHash: %s\n", shortenHashRise(res.TxHash))
-			fmt.Printf("Network: Rise Testnet\n")
-			fmt.Printf("Fee: %s\n", res.Fee)
-			fmt.Printf("Explorer: %s%s\n\n", EXPLORER_BASE_RISE, res.ContractAddr)
-			fmt.Println("▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
+			fmt.Printf("[%s #%d]\n", cyan2("Wallet"), res.WalletIndex)
+			fmt.Printf("%s: %s\n", magenta2("Contract"), shortenAddressRise(res.ContractAddr))
+			fmt.Printf("%s: %s\n", magenta2("TxHash"), shortenHashRise(res.TxHash))
+			fmt.Printf("%s: %s\n", magenta2("Network"), yellow2("Rise Testnet"))
+			fmt.Printf("%s: %s\n", magenta2("Fee"), res.Fee)
+			fmt.Printf("%s: %s%s\n\n", magenta2("Explorer"), blue2(EXPLORER_BASE_RISE), blue2(res.TxHash))
+			fmt.Println("\n▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
 		} else {
 			failureCount++
 			if firstError == nil {
 				firstError = res.Error
 			}
-			fmt.Printf("🔴 DEPLOYMENT FAILED [Wallet #%d]\n", res.WalletIndex)
-			fmt.Printf("Error: %v\n\n", res.Error)
-			fmt.Println("▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
+			fmt.Printf("%s %s [%s #%d]\n",
+				red2("🔴"), red2("DEPLOYMENT FAILED"), cyan2("Wallet"), res.WalletIndex)
+			fmt.Printf("%s: %v\n\n", red2("Error"), res.Error)
+			fmt.Println("\n▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
 
-			fmt.Printf("\n❌ DEPLOYMENT FAILED - Aborting\n")
-			fmt.Printf("First error: %v\n", firstError)
-			fmt.Printf("Total successfully deployed: %d/%d\n", successCount, successCount+failureCount)
+			fmt.Printf("\n%s %s\n", red2("❌"), red2("DEPLOYMENT FAILED - Aborting"))
+			fmt.Printf("%s: %v\n", red2("First error"), firstError)
+			fmt.Printf("%s: %s/%s\n", yellow2("Total successfully deployed"), green2(successCount), magenta2(numContracts))
 			return
 		}
 	}
+
 	if failureCount == 0 {
-		fmt.Println("\n✅ DEPLOYMENT SUCCESS")
+		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
-		fmt.Printf("Total successfully deployed: %d/%d\n", successCount, successCount)
+		fmt.Printf("%s: %s/%s\n", yellow2("Total successfully deployed"), green2(successCount), magenta2(numContracts))
 		fmt.Println()
 	}
 }
@@ -155,8 +155,8 @@ func deployContractRise(privateKey string, walletIndex int, contractABI abi.ABI)
 		return DeployResultRise{Error: fmt.Errorf("failed to get gas price: %v", err)}
 	}
 
-	gasPrice := new(big.Int).Mul(suggestedGasPrice, big.NewInt(11))
-	gasPrice.Div(gasPrice, big.NewInt(10))
+	bufferGasPrice := new(big.Int).Mul(suggestedGasPrice, big.NewInt(100+GAS_PRICE_BUFFER_PERCENT_RISE))
+	bufferGasPrice.Div(bufferGasPrice, big.NewInt(100))
 
 	pk, err := crypto.HexToECDSA(strings.TrimPrefix(privateKey, "0x"))
 	if err != nil {
@@ -174,15 +174,22 @@ func deployContractRise(privateKey string, walletIndex int, contractABI abi.ABI)
 		return DeployResultRise{Error: fmt.Errorf("failed to create transactor: %v", err)}
 	}
 
+	bytecode := getBasicContractBytecodeRise()
+
+	gasLimit, err := estimateGasLimitRise(client, fromAddress, bytecode)
+	if err != nil {
+		return DeployResultRise{Error: fmt.Errorf("gas estimation failed: %v", err)}
+	}
+
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.GasLimit = GAS_LIMIT_RISE
-	auth.GasPrice = gasPrice
+	auth.GasLimit = gasLimit
+	auth.GasPrice = bufferGasPrice
 	auth.Value = big.NewInt(0)
 
 	address, tx, _, err := bind.DeployContract(
 		auth,
 		contractABI,
-		getBasicContractBytecodeRise(),
+		bytecode,
 		client,
 	)
 	if err != nil {
@@ -195,21 +202,17 @@ func deployContractRise(privateKey string, walletIndex int, contractABI abi.ABI)
 	}
 
 	fee := new(big.Float).Quo(
-		new(big.Float).SetInt(new(big.Int).Mul(big.NewInt(int64(receipt.GasUsed)), gasPrice)),
-		new(big.Float).SetInt(big.NewInt(1e18)), 
+		new(big.Float).SetInt(new(big.Int).Mul(big.NewInt(int64(receipt.GasUsed)), bufferGasPrice)),
+		new(big.Float).SetInt(big.NewInt(1e18)),
 	)
-	
-	feeStr := strings.TrimRight(strings.TrimRight(fee.Text('f', 18), "0"), "")
-	if strings.HasSuffix(feeStr, ".") {
-		feeStr = strings.TrimSuffix(feeStr, ".")
-	}
-	
+	feeStr, _ := fee.Float64()
+
 	return DeployResultRise{
 		Success:      true,
 		WalletIndex:  walletIndex,
 		ContractAddr: address.Hex(),
 		TxHash:       tx.Hash().Hex(),
-		Fee:          feeStr + " ETH",
+		Fee:          yellow2(fmt.Sprintf("%.6f ETH", feeStr)),
 	}
 }
 
@@ -234,4 +237,18 @@ func shortenHashRise(hash string) string {
 		return hash
 	}
 	return hash[:8] + "..." + hash[len(hash)-8:]
+}
+
+func estimateGasLimitRise(client *ethclient.Client, from common.Address, data []byte) (uint64, error) {
+	msg := ethereum.CallMsg{
+		From: from,
+		Data: data,
+	}
+	gasLimit, err := client.EstimateGas(context.Background(), msg)
+	if err != nil {
+		return 0, fmt.Errorf("failed to estimate gas: %v", err)
+	}
+
+	gasLimitWithBuffer := gasLimit * (100 + GAS_LIMIT_BUFFER_PERCENT_RISE) / 100
+	return gasLimitWithBuffer, nil
 }

@@ -17,17 +17,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/joho/godotenv"
 	"github.com/fatih/color"
+	"github.com/joho/godotenv"
 )
 
 const (
-	RPC_URL_MONAD       = "https://testnet-rpc.monad.xyz"
-	CHAIN_ID_MONAD      = 10143
-	EXPLORER_BASE_MONAD = "https://testnet.monadexplorer.com/tx/"
-	DELAY_SECONDS_MONAD = 2
+	RPC_URL_MONAD            = "https://testnet-rpc.monad.xyz"
+	CHAIN_ID_MONAD           = 10143
+	EXPLORER_BASE_MONAD      = "https://testnet.monadexplorer.com/tx/"
+	DELAY_SECONDS_MONAD      = 2
 	GAS_PRICE_BUFFER_PERCENT = 0
-	GAS_LIMIT_BUFFER_PERCENT = 10 
+	GAS_LIMIT_BUFFER_PERCENT = 10
 )
 
 var (
@@ -123,7 +123,7 @@ func Monad() {
 			if firstError == nil {
 				firstError = res.Error
 			}
-			fmt.Printf("%s %s [%s #%d]\n", 
+			fmt.Printf("%s %s [%s #%d]\n",
 				red("🔴"), red("DEPLOYMENT FAILED"), cyan("Wallet"), res.WalletIndex)
 			fmt.Printf("%s: %v\n\n", red("Error"), res.Error)
 			fmt.Println("\n▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
@@ -136,7 +136,7 @@ func Monad() {
 	}
 
 	if failureCount == 0 {
-		fmt.Printf("\n%s %s\n", green("✅ DEPLOYMENT SUCCESS"))
+		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
 		fmt.Printf("%s: %s/%s\n", yellow("Total successfully deployed"), green(successCount), magenta(numContracts))
 		fmt.Println()
@@ -248,7 +248,7 @@ func estimateGasLimit(client *ethclient.Client, from common.Address, data []byte
 	if err != nil {
 		return 0, fmt.Errorf("failed to estimate gas: %v", err)
 	}
-	
+
 	gasLimitWithBuffer := gasLimit * (100 + GAS_LIMIT_BUFFER_PERCENT) / 100
 	return gasLimitWithBuffer, nil
 }

@@ -17,17 +17,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/joho/godotenv"
 	"github.com/fatih/color"
+	"github.com/joho/godotenv"
 )
 
 const (
-	RPC_URL_MEGAETH       = "https://carrot.megaeth.com/rpc"
-	CHAIN_ID_MEGAETH      = 6342
-	EXPLORER_BASE_MEGAETH = "https://www.megaexplorer.xyz/tx/"
-	DELAY_SECONDS_MEGAETH = 2
+	RPC_URL_MEGAETH                  = "https://carrot.megaeth.com/rpc"
+	CHAIN_ID_MEGAETH                 = 6342
+	EXPLORER_BASE_MEGAETH            = "https://www.megaexplorer.xyz/tx/"
+	DELAY_SECONDS_MEGAETH            = 2
 	GAS_PRICE_BUFFER_PERCENT_MEGAETH = 0
-	GAS_LIMIT_BUFFER_PERCENT_MEGAETH = 10 
+	GAS_LIMIT_BUFFER_PERCENT_MEGAETH = 10
 )
 
 var (
@@ -123,7 +123,7 @@ func MegaETH() {
 			if firstError == nil {
 				firstError = res.Error
 			}
-			fmt.Printf("%s %s [%s #%d]\n", 
+			fmt.Printf("%s %s [%s #%d]\n",
 				red1("🔴"), red1("DEPLOYMENT FAILED"), cyan1("Wallet"), res.WalletIndex)
 			fmt.Printf("%s: %v\n\n", red1("Error"), res.Error)
 			fmt.Println("\n▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")
@@ -136,7 +136,7 @@ func MegaETH() {
 	}
 
 	if failureCount == 0 {
-		fmt.Printf("\n%s %s\n", green1("✅ DEPLOYMENT SUCCESS"))
+		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
 		fmt.Printf("%s: %s/%s\n", yellow1("Total successfully deployed"), green1(successCount), magenta1(numContracts))
 		fmt.Println()
@@ -248,7 +248,7 @@ func estimateGasLimitMegaETH(client *ethclient.Client, from common.Address, data
 	if err != nil {
 		return 0, fmt.Errorf("failed to estimate gas: %v", err)
 	}
-	
+
 	gasLimitWithBuffer := gasLimit * (100 + GAS_LIMIT_BUFFER_PERCENT_MEGAETH) / 100
 	return gasLimitWithBuffer, nil
 }
