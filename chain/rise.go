@@ -136,7 +136,7 @@ func Rise() {
 	}
 
 	if failureCount == 0 {
-		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
+		fmt.Println(green2("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
 		fmt.Printf("%s: %s/%s\n", yellow2("Total successfully deployed"), green2(successCount), magenta2(numContracts))
 		fmt.Println()

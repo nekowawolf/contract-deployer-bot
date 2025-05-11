@@ -136,7 +136,7 @@ func Og() {
 	}
 
 	if failureCount == 0 {
-		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
+		fmt.Println(green3("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
 		fmt.Printf("%s: %s/%s\n", yellow3("Total successfully deployed"), green3(successCount), magenta3(numContracts))
 		fmt.Println()

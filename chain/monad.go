@@ -136,7 +136,7 @@ func Monad() {
 	}
 
 	if failureCount == 0 {
-		fmt.Println(green1("\n✅ DEPLOYMENT SUCCESS"))
+		fmt.Println(green("\n✅ DEPLOYMENT SUCCESS"))
 		fmt.Println("\nFollow X : 0xNekowawolf\n")
 		fmt.Printf("%s: %s/%s\n", yellow("Total successfully deployed"), green(successCount), magenta(numContracts))
 		fmt.Println()
