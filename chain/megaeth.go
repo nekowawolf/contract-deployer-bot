@@ -42,6 +42,7 @@ var (
 type DeployResultMegaETH struct {
 	Success      bool
 	WalletIndex  int
+	Cycle        int
 	ContractAddr string
 	TxHash       string
 	Fee          string
@@ -95,7 +96,7 @@ func MegaETH() {
 			walletMutexes[walletIdx].Lock()
 			defer walletMutexes[walletIdx].Unlock()
 
-			results <- deployContractMegaETH(activeWallets[walletIdx], walletIdx+1, contractABI)
+			results <- deployContractMegaETH(activeWallets[walletIdx], walletIdx+1, contractNum+1, contractABI)
 		}(i, walletIndex)
 	}
 
@@ -111,7 +112,7 @@ func MegaETH() {
 	for res := range results {
 		if res.Success {
 			successCount++
-			fmt.Printf("[%s #%d]\n", cyan1("Wallet"), res.WalletIndex)
+			fmt.Printf("[%s #%d] %s %s\n", cyan1("Wallet"), res.WalletIndex, green1("Cycle"), green1(fmt.Sprint(res.Cycle)))
 			fmt.Printf("%s: %s\n", magenta1("Contract"), shortenAddressMegaETH(res.ContractAddr))
 			fmt.Printf("%s: %s\n", magenta1("TxHash"), shortenHashMegaETH(res.TxHash))
 			fmt.Printf("%s: %s\n", magenta1("Network"), yellow1("MegaETH Testnet"))
@@ -143,7 +144,7 @@ func MegaETH() {
 	}
 }
 
-func deployContractMegaETH(privateKey string, walletIndex int, contractABI abi.ABI) DeployResultMegaETH {
+func deployContractMegaETH(privateKey string, walletIndex int, cycle int, contractABI abi.ABI) DeployResultMegaETH {
 	client, err := ethclient.Dial(RPC_URL_MEGAETH)
 	if err != nil {
 		return DeployResultMegaETH{Error: fmt.Errorf("RPC connection failed: %v", err)}
@@ -208,12 +209,13 @@ func deployContractMegaETH(privateKey string, walletIndex int, contractABI abi.A
 	feeStr, _ := fee.Float64()
 
 	return DeployResultMegaETH{
-		Success:      true,
-		WalletIndex:  walletIndex,
-		ContractAddr: address.Hex(),
-		TxHash:       tx.Hash().Hex(),
-		Fee:          yellow1(fmt.Sprintf("%.6f ETH", feeStr)),
-	}
+        Success:      true,
+        WalletIndex:  walletIndex,
+        Cycle:        cycle,
+        ContractAddr: address.Hex(),
+        TxHash:       tx.Hash().Hex(),
+        Fee:          yellow1(fmt.Sprintf("%.6f MON", feeStr)),
+    }
 }
 
 func getBasicContractABIMegaETH() (abi.ABI, error) {

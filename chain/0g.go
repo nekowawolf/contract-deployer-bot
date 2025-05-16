@@ -42,6 +42,7 @@ var (
 type DeployResult0g struct {
 	Success      bool
 	WalletIndex  int
+	Cycle        int
 	ContractAddr string
 	TxHash       string
 	Fee          string
@@ -95,7 +96,7 @@ func Og() {
 			walletMutexes[walletIdx].Lock()
 			defer walletMutexes[walletIdx].Unlock()
 
-			results <- deployContractOg(activeWallets[walletIdx], walletIdx+1, contractABI)
+			results <- deployContractOg(activeWallets[walletIdx], walletIdx+1, contractNum+1, contractABI)
 		}(i, walletIndex)
 	}
 
@@ -111,7 +112,7 @@ func Og() {
 	for res := range results {
 		if res.Success {
 			successCount++
-			fmt.Printf("[%s #%d]\n", cyan3("Wallet"), res.WalletIndex)
+			fmt.Printf("[%s #%d] %s %s\n", cyan3("Wallet"), res.WalletIndex, green3("Cycle"), green3(fmt.Sprint(res.Cycle)))
 			fmt.Printf("%s: %s\n", magenta3("Contract"), shortenAddress0G(res.ContractAddr))
 			fmt.Printf("%s: %s\n", magenta3("TxHash"), shortenHash0G(res.TxHash))
 			fmt.Printf("%s: %s\n", magenta3("Network"), yellow3("0g Testnet"))
@@ -143,7 +144,7 @@ func Og() {
 	}
 }
 
-func deployContractOg(privateKey string, walletIndex int, contractABI abi.ABI) DeployResult0g {
+func deployContractOg(privateKey string, walletIndex int, cycle int, contractABI abi.ABI) DeployResult0g {
 	client, err := ethclient.Dial(RPC_URL_0G)
 	if err != nil {
 		return DeployResult0g{Error: fmt.Errorf("RPC connection failed: %v", err)}
@@ -209,11 +210,12 @@ func deployContractOg(privateKey string, walletIndex int, contractABI abi.ABI) D
 
 	return DeployResult0g{
 		Success:      true,
-		WalletIndex:  walletIndex,
-		ContractAddr: address.Hex(),
-		TxHash:       tx.Hash().Hex(),
-		Fee:          yellow3(fmt.Sprintf("%.6f ETH", feeStr)),
-	}
+        WalletIndex:  walletIndex,
+        Cycle:        cycle,
+        ContractAddr: address.Hex(),
+        TxHash:       tx.Hash().Hex(),
+        Fee:          yellow3(fmt.Sprintf("%.6f MON", feeStr)),
+    }
 }
 
 func getBasicContractABI0G() (abi.ABI, error) {

@@ -42,6 +42,7 @@ var (
 type DeployResultRise struct {
 	Success      bool
 	WalletIndex  int
+	Cycle        int
 	ContractAddr string
 	TxHash       string
 	Fee          string
@@ -95,7 +96,7 @@ func Rise() {
 			walletMutexes[walletIdx].Lock()
 			defer walletMutexes[walletIdx].Unlock()
 
-			results <- deployContractRise(activeWallets[walletIdx], walletIdx+1, contractABI)
+			results <- deployContractRise(activeWallets[walletIdx], walletIdx+1, contractNum+1, contractABI)
 		}(i, walletIndex)
 	}
 
@@ -111,7 +112,7 @@ func Rise() {
 	for res := range results {
 		if res.Success {
 			successCount++
-			fmt.Printf("[%s #%d]\n", cyan2("Wallet"), res.WalletIndex)
+			fmt.Printf("[%s #%d] %s %s\n", cyan2("Wallet"), res.WalletIndex, green2("Cycle"), green2(fmt.Sprint(res.Cycle)))
 			fmt.Printf("%s: %s\n", magenta2("Contract"), shortenAddressRise(res.ContractAddr))
 			fmt.Printf("%s: %s\n", magenta2("TxHash"), shortenHashRise(res.TxHash))
 			fmt.Printf("%s: %s\n", magenta2("Network"), yellow2("Rise Testnet"))
@@ -143,7 +144,7 @@ func Rise() {
 	}
 }
 
-func deployContractRise(privateKey string, walletIndex int, contractABI abi.ABI) DeployResultRise {
+func deployContractRise(privateKey string, walletIndex int, cycle int, contractABI abi.ABI) DeployResultRise {
 	client, err := ethclient.Dial(RPC_URL_RISE)
 	if err != nil {
 		return DeployResultRise{Error: fmt.Errorf("RPC connection failed: %v", err)}
@@ -209,11 +210,12 @@ func deployContractRise(privateKey string, walletIndex int, contractABI abi.ABI)
 
 	return DeployResultRise{
 		Success:      true,
-		WalletIndex:  walletIndex,
-		ContractAddr: address.Hex(),
-		TxHash:       tx.Hash().Hex(),
-		Fee:          yellow2(fmt.Sprintf("%.6f ETH", feeStr)),
-	}
+        WalletIndex:  walletIndex,
+        Cycle:        cycle,
+        ContractAddr: address.Hex(),
+        TxHash:       tx.Hash().Hex(),
+        Fee:          yellow2(fmt.Sprintf("%.6f MON", feeStr)),
+    }
 }
 
 func getBasicContractABIRise() (abi.ABI, error) {

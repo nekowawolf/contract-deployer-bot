@@ -42,6 +42,7 @@ var (
 type DeployResultMonad struct {
 	Success      bool
 	WalletIndex  int
+	Cycle        int
 	ContractAddr string
 	TxHash       string
 	Fee          string
@@ -84,20 +85,20 @@ func Monad() {
 	walletMutexes := make([]sync.Mutex, len(activeWallets))
 
 	for i := 0; i < numContracts; i++ {
-		wg.Add(1)
-		walletIndex := i % len(activeWallets)
+        wg.Add(1)
+        walletIndex := i % len(activeWallets)
 
-		go func(contractNum int, walletIdx int) {
-			defer wg.Done()
+        go func(contractNum int, walletIdx int) {
+            defer wg.Done()
 
-			time.Sleep(time.Duration(contractNum*DELAY_SECONDS_MONAD) * time.Second)
+            time.Sleep(time.Duration(contractNum*DELAY_SECONDS_MONAD) * time.Second)
 
-			walletMutexes[walletIdx].Lock()
-			defer walletMutexes[walletIdx].Unlock()
+            walletMutexes[walletIdx].Lock()
+            defer walletMutexes[walletIdx].Unlock()
 
-			results <- deployContractMonad(activeWallets[walletIdx], walletIdx+1, contractABI)
-		}(i, walletIndex)
-	}
+            results <- deployContractMonad(activeWallets[walletIdx], walletIdx+1, contractNum+1, contractABI)
+        }(i, walletIndex)
+    }
 
 	go func() {
 		wg.Wait()
@@ -111,7 +112,7 @@ func Monad() {
 	for res := range results {
 		if res.Success {
 			successCount++
-			fmt.Printf("[%s #%d]\n", cyan("Wallet"), res.WalletIndex)
+			fmt.Printf("[%s #%d] %s %s\n", cyan("Wallet"), res.WalletIndex, green("Cycle"), green(fmt.Sprint(res.Cycle)))
 			fmt.Printf("%s: %s\n", magenta("Contract"), shortenAddressMonad(res.ContractAddr))
 			fmt.Printf("%s: %s\n", magenta("TxHash"), shortenHashMonad(res.TxHash))
 			fmt.Printf("%s: %s\n", magenta("Network"), yellow("Monad Testnet"))
@@ -143,7 +144,7 @@ func Monad() {
 	}
 }
 
-func deployContractMonad(privateKey string, walletIndex int, contractABI abi.ABI) DeployResultMonad {
+func deployContractMonad(privateKey string, walletIndex int, cycle int, contractABI abi.ABI) DeployResultMonad {
 	client, err := ethclient.Dial(RPC_URL_MONAD)
 	if err != nil {
 		return DeployResultMonad{Error: fmt.Errorf("RPC connection failed: %v", err)}
@@ -208,12 +209,13 @@ func deployContractMonad(privateKey string, walletIndex int, contractABI abi.ABI
 	feeStr, _ := fee.Float64()
 
 	return DeployResultMonad{
-		Success:      true,
-		WalletIndex:  walletIndex,
-		ContractAddr: address.Hex(),
-		TxHash:       tx.Hash().Hex(),
-		Fee:          yellow(fmt.Sprintf("%.6f MON", feeStr)),
-	}
+        Success:      true,
+        WalletIndex:  walletIndex,
+        Cycle:        cycle,
+        ContractAddr: address.Hex(),
+        TxHash:       tx.Hash().Hex(),
+        Fee:          yellow(fmt.Sprintf("%.6f MON", feeStr)),
+    }
 }
 
 func getBasicContractABIMonad() (abi.ABI, error) {
