@@ -214,7 +214,7 @@ func deployContractRise(privateKey string, walletIndex int, cycle int, contractA
         Cycle:        cycle,
         ContractAddr: address.Hex(),
         TxHash:       tx.Hash().Hex(),
-        Fee:          yellow2(fmt.Sprintf("%.6f MON", feeStr)),
+        Fee:          yellow2(fmt.Sprintf("%.6f ETH", feeStr)),
     }
 }
 

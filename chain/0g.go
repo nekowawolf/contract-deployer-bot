@@ -23,7 +23,7 @@ import (
 
 const (
 	RPC_URL_0G                  = "https://evmrpc-testnet.0g.ai"
-	CHAIN_ID_0G                 = 80087
+	CHAIN_ID_0G                 = 16601
 	EXPLORER_BASE_0G            = "https://chainscan-galileo.0g.ai/tx/"
 	DELAY_SECONDS_0G            = 2
 	GAS_PRICE_BUFFER_PERCENT_OG = 0
@@ -214,7 +214,7 @@ func deployContractOg(privateKey string, walletIndex int, cycle int, contractABI
         Cycle:        cycle,
         ContractAddr: address.Hex(),
         TxHash:       tx.Hash().Hex(),
-        Fee:          yellow3(fmt.Sprintf("%.6f MON", feeStr)),
+        Fee:          yellow3(fmt.Sprintf("%.6f ETH", feeStr)),
     }
 }
 

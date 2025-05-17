@@ -214,7 +214,7 @@ func deployContractMegaETH(privateKey string, walletIndex int, cycle int, contra
         Cycle:        cycle,
         ContractAddr: address.Hex(),
         TxHash:       tx.Hash().Hex(),
-        Fee:          yellow1(fmt.Sprintf("%.6f MON", feeStr)),
+        Fee:          yellow1(fmt.Sprintf("%.6f ETH", feeStr)),
     }
 }
 
