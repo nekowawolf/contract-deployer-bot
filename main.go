@@ -16,6 +16,7 @@ func main() {
     fmt.Println("2. MegaETH")
     fmt.Println("3. Rise")
     fmt.Println("4. 0g")
+	fmt.Println("5. Pharos")
     fmt.Print("Enter your choice:")
 
     reader := bufio.NewReader(os.Stdin)
@@ -36,6 +37,9 @@ func main() {
     case "4":
         selectedNetwork = "0g"
         fmt.Println("\nChain selected: 0g Network")
+	case "5":
+        selectedNetwork = "pharos"
+        fmt.Println("\nChain selected: Pharos Network")
     default:
         fmt.Println("Invalid choice. Please select your choice")
         os.Exit(1)

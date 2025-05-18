@@ -20,6 +20,7 @@ Contract deployer bot is an automated tool that simplifies the process of deploy
 - MegaETH
 - Rise
 - 0G
+- Pharos
 - More soon
 
 ## 📌 Setup

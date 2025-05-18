@@ -52,4 +52,14 @@ var Networks = map[string]NetworkConfig{
         GasLimitBuffer: 10,
         NativeCurrency: "0G",
     },
+    "pharos": {
+        Name:           "Pharos Testnet",
+        RPCURL:         "https://testnet.dplabs-internal.com",
+        ChainID:        688688,
+        ExplorerBase:   "https://testnet.pharosscan.xyz/tx/",
+        DelaySeconds:   2,
+        GasPriceBuffer: 0,
+        GasLimitBuffer: 10,
+        NativeCurrency: "PHRS",
+    },
 }
