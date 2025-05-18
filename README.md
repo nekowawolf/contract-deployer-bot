@@ -2,7 +2,7 @@
 
 Contract deployer bot is an automated tool that simplifies the process of deploying smart contracts with ease. In just a few clicks, you can deploy to the blockchain
 
-![bot dashboard](img/img1.png)
+![bot dashboard](img/img2.png)
 
 ## 🚀 Features
 
